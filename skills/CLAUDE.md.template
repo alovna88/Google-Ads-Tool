@@ -1,0 +1,138 @@
+# Agency Google Ads Workspace — [CLIENT NAME]
+
+Copy this file into a per-client folder (`~/agency/clients/<slug>/CLAUDE.md`) and fill in every section.
+This file is read at the start of every Claude Code session and by every skill. It is the steering wheel.
+
+## 1. Client identity
+
+- **Company**: [CLIENT NAME]
+- **Product**: [ONE SENTENCE]
+- **ICP**: [TITLE], [COMPANY SIZE], [INDUSTRY]
+- **ACV (annual contract value)**: $[NUMBER]
+- **Sales cycle**: [NUMBER] days (median)
+- **Currency**: [USD / EUR / GBP / ...]
+- **Reporting timezone**: [IANA, e.g. America/New_York]
+- **Google Ads CID**: [123-456-7890]
+- **MCC login customer id**: [123-456-7890]
+
+## 2. Targets
+
+- **Target CAC**: $[NUMBER]
+- **Target LTV:CAC**: [3.0 minimum, 5.0 top-quartile]
+- **Target payback period**: [MONTHS]
+- **Primary success metric**: [Closed-Won pipeline / SQL volume / MQL volume]
+
+## 3. Conversion hierarchy (THE SPINE)
+
+Order matters. Primary is what Smart Bidding optimizes toward. Secondary is "track but don't optimize."
+
+| Stage | Type | Primary? | Value | Source |
+|---|---|---|---|---|
+| Lead form submission | Conversion | No (secondary) | $1 | Website + GTM |
+| MQL | Offline upload | No | $25 | OCI sheet |
+| SQL | Offline upload | No | $50 | OCI sheet |
+| Opportunity | Offline upload | No | $500 | OCI sheet |
+| Closed-Won | Offline upload | **YES** | ACV ($[ACV]) | OCI sheet |
+
+- **OCI Google Sheet ID**: [SHEET ID — see `skills/oci-template-sheet/` for format]
+- **Conversion window (primary action)**: **90 days** (B2B default; never less)
+- **Attribution model**: Data-driven (or Position-based for low-volume)
+
+## 4. Account structure (required archetypes)
+
+Every B2B SaaS account should have these. Audit will flag missing ones.
+
+- [ ] **Brand** — Exact + Phrase on company name + product names + permutations. Defensive.
+- [ ] **Competitor** — Top 5 competitor brand names. Tight ad groups per competitor.
+- [ ] **Non-brand product** — Category terms with commercial intent (e.g. "[product category] software", "[product category] platform").
+- [ ] **Non-brand problem** — Pain-point queries (e.g. "reduce [pain]", "improve [outcome]").
+- [ ] **Remarketing (RLSA)** — Audience layered on broader queries.
+
+Optional:
+- [ ] **DSA** — Dynamic Search Ads against the website, with controlled categories.
+- [ ] **YouTube / Demand Gen** — Top-of-funnel only after Search is profitable.
+
+## 5. Bidding rules
+
+These are enforced by the audit and by the skills. Override per campaign with a documented reason.
+
+- **Default bid strategy**: Maximize Conversions with Target CPA cap (cap = [TARGET_CAC] / [MQL→Closed-Won rate])
+- **Volume floor for Smart Bidding**: 30 conversions / 30 days at the campaign level. Below floor → Maximize Clicks + Exact Match only.
+- **Broad match prerequisite**: OCI must be flowing successfully for 30+ days, and the campaign must have a Target CPA / Target ROAS in place. Default = OFF.
+- **Auto-applied recommendations**: **OFF**, all types.
+- **Search Network expansion (Display)**: **OFF**.
+- **Search partners**: **OFF** unless data proves otherwise.
+
+## 6. Negative keyword baseline
+
+Applied at account level. Per-campaign and per-ad-group overlays in the campaign briefs.
+
+- **Standard B2B SaaS exclusions** (apply the `negative-keyword-builder` skill starter library):
+  - Jobs / careers / salary
+  - Education / tutorial / "what is" / "how to"
+  - Free / open-source / "vs" comparisons toward off-target competitors
+  - Login / support / help / documentation
+  - Cheap / discount / coupon
+- **Client-specific exclusions**:
+  - [LIST: competitor employee names, off-target verticals, geo exclusions]
+
+## 7. Brand voice
+
+For ad copy, landing pages, and report narrative.
+
+- **Tone**: [e.g. confident, technical, no jargon, no superlatives]
+- **Avoid**: [e.g. "revolutionary", "game-changer", "best-in-class", em-dashes if banned]
+- **Required**: [e.g. mention "[differentiator]" within first 30 chars; use sentence case]
+- **Banned topics**: [e.g. no mentions of [competitor] by name in headlines]
+
+## 8. Approval thresholds (Action Queue)
+
+What can be auto-approved vs requires a human.
+
+- **L1 — auto-approvable (bulk OK)**: Negative keywords with <$50 wasted spend, asset pause for <0.5% CTR after 30 days, budget shifts under 10%.
+- **L2 — single human approval**: Budget shifts 10–25%, RSA asset rotation, conversion action edits, geo/schedule changes.
+- **L3 — MFA + human approval**: Campaign pause, bid strategy change, structure change (new campaign / merge / split), broad-match enablement, conversion action created/removed.
+
+## 9. Stakeholders
+
+| Role | Name | Email | Notification for |
+|---|---|---|---|
+| Account owner (agency) | [NAME] | [EMAIL] | All L2/L3 executions, weekly summary |
+| Client primary contact | [NAME] | [EMAIL] | Weekly summary, monthly report |
+| Client billing | [NAME] | [EMAIL] | Monthly report only |
+| Sales ops (CRM) | [NAME] | [EMAIL] | OCI failures, tracking-health alerts |
+
+## 10. Tracking and CRM
+
+- **GTM container ID**: [GTM-XXXX]
+- **GA4 property ID**: [G-XXXX]
+- **EC4L (Enhanced Conversions for Leads)**: [enabled / not yet] — required for B2B
+- **CRM**: [HubSpot / Salesforce / other]
+- **GCLID storage field**: [hubspot:hs_google_click_id / sfdc:GCLID__c / ...]
+- **Lifecycle → conversion mapping** (where lifecycle transitions become OCI uploads):
+  - HubSpot lifecycle stage "Marketing Qualified Lead" → MQL
+  - HubSpot lifecycle stage "Sales Qualified Lead" → SQL
+  - Salesforce Opportunity StageName "Proposal/Negotiation" → Opportunity
+  - Salesforce Opportunity StageName "Closed Won" → Closed-Won
+- **OCI sheet schema** (required columns): `gclid | conversion_action_name | stage | value_usd | conversion_time_iso | order_id`
+
+## 11. File layout for this client
+
+```
+~/agency/clients/[slug]/
+├── CLAUDE.md          ← you are here
+├── data/              ← CSV exports from Google Ads UI when needed
+├── reports/           ← generated weekly/monthly reports
+├── competitor/        ← competitor URLs, Wayback snapshots, notes
+└── creative/          ← ad copy drafts, RSA variants, landing page copy
+```
+
+## 12. How Claude should behave in this workspace
+
+- Be direct. Skip preamble. Tables over prose.
+- Surface the top 3 actionable recommendations whenever analyzing data.
+- Default to **profit/CAC framing**, not CPC/CTR/CPL.
+- When proposing changes, always include: (a) what to change, (b) why (with data), (c) expected impact + confidence, (d) what to watch for after change.
+- Never auto-apply destructive actions. Draft them and surface for approval.
+- If a `playbook.md` or this CLAUDE.md contradicts a generic best practice, the playbook wins.
+- When data is missing, say what's missing — don't make it up.
