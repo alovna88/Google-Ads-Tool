@@ -27,13 +27,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Permissive CORS in dev; tightened in production.
-allowed_origins = (
-    ["*"] if not settings.is_production else [settings.web_base_url]
-)
+# With cookie-based sessions we must pin the origin — wildcard is invalid
+# alongside allow_credentials=True. In dev the browser always hits the web
+# origin (Next.js rewrites proxy /api/*), so CORS is rarely exercised; we
+# allow web_base_url anyway in case of direct cross-origin calls.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=[settings.web_base_url],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,16 +1,18 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { serverCookieHeader } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
 export default async function ClientsPage() {
+  const cookie = await serverCookieHeader();
   let clients: Awaited<ReturnType<typeof api.listClients>> | null = null;
   let error: string | null = null;
 
   try {
-    clients = await api.listClients();
+    clients = await api.listClients({ cookie });
   } catch (e) {
     error = e instanceof Error ? e.message : "failed to load clients";
   }

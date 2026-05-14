@@ -1,19 +1,15 @@
-// API client. Server-side requests go directly to API_BASE_URL_INTERNAL
-// (the in-cluster service URL); client-side requests go through the public
-// NEXT_PUBLIC_API_BASE_URL. We always use the public one in this scaffold
-// because both server-component and client-component fetches need a URL the
-// container network can resolve.
+// API client. Browser always hits same-origin `/api/*` (Next.js rewrites
+// proxy it to the FastAPI server). Server components in production can
+// hit the API directly via API_INTERNAL_URL to skip the proxy hop.
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
-
-// In Docker Compose, server components can't reach `localhost` (that's the
-// container's own loopback). The compose file sets this only at runtime.
-const API_BASE_URL_INTERNAL =
-  process.env.API_BASE_URL_INTERNAL ?? API_BASE_URL;
+const BROWSER_BASE = "/api";
+const SERVER_BASE =
+  process.env.API_INTERNAL_URL ??
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  "http://localhost:8000";
 
 function resolveBase(): string {
-  return typeof window === "undefined" ? API_BASE_URL_INTERNAL : API_BASE_URL;
+  return typeof window === "undefined" ? SERVER_BASE : BROWSER_BASE;
 }
 
 export type Client = {
@@ -44,23 +40,47 @@ export type Playbook = {
   updated_at: string;
 };
 
+export type CurrentUser = {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  created_at: string;
+};
+
 class ApiError extends Error {
   constructor(public status: number, public body: unknown) {
     super(`API ${status}`);
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(
+  path: string,
+  init?: RequestInit & { cookie?: string },
+): Promise<T> {
+  // On the server we have to forward the incoming Cookie header for
+  // session-aware calls; the browser sends cookies automatically when
+  // we use `credentials: 'include'`.
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...((init?.headers as Record<string, string>) ?? {}),
+  };
+  if (init?.cookie) headers["Cookie"] = init.cookie;
+
   const res = await fetch(`${resolveBase()}${path}`, {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
+    headers,
+    credentials: "include",
     cache: "no-store",
   });
+
   if (!res.ok) {
-    const body = await res.text();
+    let body: unknown = null;
+    try {
+      body = await res.json();
+    } catch {
+      body = await res.text();
+    }
     throw new ApiError(res.status, body);
   }
   if (res.status === 204) return undefined as T;
@@ -68,15 +88,24 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  listClients: () => request<ClientList>("/clients"),
-  getClient: (id: string) => request<Client>(`/clients/${id}`),
+  // Auth
+  me: (opts?: { cookie?: string }) => request<CurrentUser>("/auth/me", opts),
+  logout: () => request<void>("/auth/logout", { method: "POST" }),
+
+  // Clients
+  listClients: (opts?: { cookie?: string }) =>
+    request<ClientList>("/clients", opts),
+  getClient: (id: string, opts?: { cookie?: string }) =>
+    request<Client>(`/clients/${id}`, opts),
   createClient: (payload: Partial<Client>) =>
     request<Client>("/clients", {
       method: "POST",
       body: JSON.stringify(payload),
     }),
-  getPlaybook: (clientId: string) =>
-    request<Playbook>(`/clients/${clientId}/playbook`),
+
+  // Playbooks
+  getPlaybook: (clientId: string, opts?: { cookie?: string }) =>
+    request<Playbook>(`/clients/${clientId}/playbook`, opts),
   savePlaybook: (clientId: string, contentMd: string) =>
     request<Playbook>(`/clients/${clientId}/playbook`, {
       method: "PUT",

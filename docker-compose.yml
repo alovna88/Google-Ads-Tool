@@ -72,7 +72,10 @@ services:
       dockerfile: Dockerfile
       target: dev
     environment:
-      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+      # Browser always hits /api/* same-origin (Next.js rewrites proxy
+      # to API_INTERNAL_URL on the server side). No cross-origin cookie
+      # gymnastics in dev or prod.
+      API_INTERNAL_URL: http://api:8000
     ports:
       - "3000:3000"
     volumes:

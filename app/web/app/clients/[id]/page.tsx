@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
+import { serverCookieHeader } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlaybookEditor } from "./playbook-editor";
 
@@ -12,9 +13,11 @@ export default async function ClientDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const cookie = await serverCookieHeader();
+
   let client: Awaited<ReturnType<typeof api.getClient>>;
   try {
-    client = await api.getClient(id);
+    client = await api.getClient(id, { cookie });
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) notFound();
     throw e;
@@ -23,7 +26,7 @@ export default async function ClientDetailPage({
   let initialContent = "";
   let playbookVersion: number | null = null;
   try {
-    const pb = await api.getPlaybook(id);
+    const pb = await api.getPlaybook(id, { cookie });
     initialContent = pb.content_md;
     playbookVersion = pb.version;
   } catch (e) {

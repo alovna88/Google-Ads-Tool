@@ -1,4 +1,4 @@
-"""Clients CRUD endpoints."""
+"""Clients CRUD endpoints. All require an authenticated staff user."""
 
 import uuid
 
@@ -7,10 +7,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agency_ads.db import session_dependency
+from agency_ads.dependencies import current_user
+from agency_ads.models import User
 from agency_ads.schemas.client import ClientCreate, ClientList, ClientRead
 from agency_ads.services import client_service
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(current_user)])
 
 
 @router.get("", response_model=ClientList)
@@ -25,6 +27,7 @@ async def list_clients_endpoint(
 async def create_client_endpoint(
     payload: ClientCreate,
     session: AsyncSession = Depends(session_dependency),
+    user: User = Depends(current_user),
 ) -> ClientRead:
     existing = await client_service.get_client_by_slug(session, payload.slug)
     if existing is not None:

@@ -123,32 +123,64 @@ make down                       # stop the stack
 make clean                      # stop + remove local data volumes
 ```
 
-### Smoke test — create a client and edit its playbook
+## Configuring staff Google OAuth (required to log in)
+
+The web app gates everything behind Google OAuth. You need to register OAuth credentials in Google Cloud Console, then drop them into `.env`.
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials.
+2. Create / pick a project (e.g. `agency-internal-tools`).
+3. **OAuth consent screen**:
+   - User type: **Internal** if your agency runs Google Workspace and you want to restrict to that domain; otherwise **External** in Testing mode (you add allowed test users individually).
+   - Scopes: just the default `openid`, `email`, `profile`.
+4. **Credentials → Create credentials → OAuth client ID**:
+   - Application type: **Web application**.
+   - Name: `Agency Google Ads — Dev` (and a separate one for `— Prod`).
+   - **Authorized redirect URIs**:
+     - Dev: `http://localhost:3000/api/auth/callback`
+     - Prod: `https://<your-fly-web-app>.fly.dev/api/auth/callback`
+5. Copy the **Client ID** and **Client Secret** into `.env`:
+   ```env
+   GOOGLE_OAUTH_CLIENT_ID=...apps.googleusercontent.com
+   GOOGLE_OAUTH_CLIENT_SECRET=GOCSPX-...
+   ```
+6. Restrict who can log in. Pick one or both:
+   ```env
+   AUTH_ALLOWED_EMAIL_DOMAINS=youragency.com
+   AUTH_ALLOWED_EMAILS=contractor@gmail.com,other@partner.io
+   ```
+   Empty allowlists mean: any Google account in dev, **no one** in production (fail-closed).
+7. Generate a real `SESSION_SECRET` (this signs the session cookie):
+   ```bash
+   python -c 'import secrets; print(secrets.token_urlsafe(32))'
+   ```
+   Drop it into `.env`. **Rotating this value invalidates every signed-in session.**
+
+Restart `make dev` after editing `.env`. Then visit http://localhost:3000 → bounced to `/login` → click "Continue with Google" → land back on `/clients`.
+
+### Smoke test once logged in
 
 ```bash
-curl -s localhost:8000/health
-curl -s -X POST localhost:8000/clients \
-  -H 'Content-Type: application/json' \
-  -d '{"name":"Acme","slug":"acme","currency":"USD","timezone":"America/New_York"}'
+# From the browser (logged in), open dev tools → Console:
+fetch('/api/auth/me', { credentials: 'include' }).then(r => r.json()).then(console.log)
 
-# Then visit http://localhost:3000/clients
+# Or hit the API direct without the cookie — should get 401:
+curl -i http://localhost:8000/auth/me
 ```
 
 ## What's wired in this commit
 
-- ✅ FastAPI app with health endpoints, OpenAPI docs at `/docs`
-- ✅ Postgres + Alembic with initial schema (`users`, `clients`, `playbooks`)
+- ✅ FastAPI app with health, auth (login/callback/logout/me), clients, playbooks
+- ✅ Staff Google OAuth + signed-cookie sessions with email allowlist
+- ✅ `current_user` dependency protecting clients + playbooks routes
+- ✅ Postgres + Alembic initial schema (`users`, `clients`, `playbooks`)
 - ✅ Redis + RQ worker (stub jobs)
-- ✅ Clients CRUD endpoints (list, create, get)
-- ✅ Playbook get/save endpoints with parsed JSONB
-- ✅ Next.js 15 frontend: home, clients list, new-client form, client detail with playbook editor
-- ✅ docker-compose for one-command local dev
-- ✅ Dockerfiles + Fly.io configs for production
+- ✅ Next.js 15 frontend: login screen, middleware-gated routes, nav with user menu
+- ✅ Same-origin `/api/*` via Next.js rewrites — no cross-origin cookie issues in dev or prod
+- ✅ docker-compose, Dockerfiles, Fly.io configs
 
 ## What's NOT wired yet (next commits)
 
-- ❌ Authentication — single-user assumption for now; Google OAuth for staff is next
-- ❌ Google Ads OAuth + MCC connection — applied for the dev token in parallel
+- ❌ Google Ads OAuth + MCC connection (waiting on developer token approval)
 - ❌ Nightly GAQL sync (the `sync_client_account` job is a stub)
 - ❌ Audit engine, action queue, reports — see `docs/roadmap.md` P0 list
 
@@ -169,7 +201,13 @@ fly postgres attach agency-ads-db --app agency-ads-worker
 fly redis create   # follow prompts; copy the REDIS_URL into secrets
 
 # Set shared secrets
-fly secrets set --app agency-ads-api SESSION_SECRET=... ANTHROPIC_API_KEY=...
+fly secrets set --app agency-ads-api \
+  SESSION_SECRET=$(python -c 'import secrets; print(secrets.token_urlsafe(32))') \
+  GOOGLE_OAUTH_CLIENT_ID=... \
+  GOOGLE_OAUTH_CLIENT_SECRET=... \
+  AUTH_ALLOWED_EMAIL_DOMAINS=youragency.com \
+  WEB_BASE_URL=https://agency-ads-web.fly.dev \
+  ANTHROPIC_API_KEY=...
 fly secrets set --app agency-ads-worker ANTHROPIC_API_KEY=...
 
 # Deploy each service

@@ -6,10 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agency_ads.db import session_dependency
+from agency_ads.dependencies import current_user
 from agency_ads.schemas.playbook import PlaybookRead, PlaybookUpsert
 from agency_ads.services import client_service
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(current_user)])
 
 
 @router.get("/{client_id}/playbook", response_model=PlaybookRead)

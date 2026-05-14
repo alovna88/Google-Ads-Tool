@@ -1,6 +1,8 @@
 import Link from "next/link";
+import type { CurrentUser } from "@/lib/api";
+import { UserMenu } from "./user-menu";
 
-export function Nav() {
+export function Nav({ user }: { user: CurrentUser | null }) {
   return (
     <nav className="border-b border-border bg-background">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
@@ -20,6 +22,7 @@ export function Nav() {
           <span className="text-muted-foreground/50" title="Coming next">
             Reports
           </span>
+          {user && <UserMenu user={user} />}
         </div>
       </div>
     </nav>
