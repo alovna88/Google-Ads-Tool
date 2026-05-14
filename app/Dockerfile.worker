@@ -1,0 +1,18 @@
+# Worker image. Same dependency tree as the API, different entry point.
+FROM python:3.12-slim AS base
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir uv==0.5.5
+
+COPY pyproject.toml ./
+RUN uv pip install --system --no-cache .
+
+COPY agency_ads ./agency_ads
+
+CMD ["python", "-m", "agency_ads.worker"]

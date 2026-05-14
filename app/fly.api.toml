@@ -1,0 +1,39 @@
+# Fly.io config for the API. Deploy: `fly deploy --config fly.api.toml`.
+# Set secrets via `fly secrets set ...` — see .env.example for the list.
+
+app = "agency-ads-api"
+primary_region = "ord"
+
+[build]
+  dockerfile = "Dockerfile.api"
+
+[env]
+  ENVIRONMENT = "production"
+  LOG_LEVEL = "INFO"
+  API_BASE_URL = "https://agency-ads-api.fly.dev"
+  WEB_BASE_URL = "https://agency-ads-web.fly.dev"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 100
+    hard_limit = 200
+
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  timeout = "5s"
+  path = "/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  cpus = 1

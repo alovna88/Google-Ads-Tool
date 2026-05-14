@@ -1,0 +1,29 @@
+# Fly.io config for the Next.js web app.
+
+app = "agency-ads-web"
+primary_region = "ord"
+
+[build]
+  dockerfile = "Dockerfile"
+  target = "runner"
+
+[env]
+  NODE_ENV = "production"
+  NEXT_PUBLIC_API_BASE_URL = "https://agency-ads-api.fly.dev"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 100
+    hard_limit = 200
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  cpus = 1

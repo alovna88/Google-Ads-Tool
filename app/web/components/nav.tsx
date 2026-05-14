@@ -1,0 +1,27 @@
+import Link from "next/link";
+
+export function Nav() {
+  return (
+    <nav className="border-b border-border bg-background">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+        <Link href="/" className="font-semibold tracking-tight">
+          Agency Google Ads
+        </Link>
+        <div className="flex items-center gap-6 text-sm">
+          <Link href="/clients" className="text-muted-foreground hover:text-foreground">
+            Clients
+          </Link>
+          <span className="text-muted-foreground/50" title="Coming next">
+            Action Queue
+          </span>
+          <span className="text-muted-foreground/50" title="Coming next">
+            Audits
+          </span>
+          <span className="text-muted-foreground/50" title="Coming next">
+            Reports
+          </span>
+        </div>
+      </div>
+    </nav>
+  );
+}

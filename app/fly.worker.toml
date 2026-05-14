@@ -1,0 +1,21 @@
+# Fly.io config for the RQ worker. Deploy: `fly deploy --config fly.worker.toml`.
+# No HTTP service — this is a long-running process.
+
+app = "agency-ads-worker"
+primary_region = "ord"
+
+[build]
+  dockerfile = "Dockerfile.worker"
+
+[env]
+  ENVIRONMENT = "production"
+  LOG_LEVEL = "INFO"
+
+[processes]
+  worker = "python -m agency_ads.worker"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  cpus = 1
+  processes = ["worker"]
