@@ -169,20 +169,32 @@ curl -i http://localhost:8000/auth/me
 
 ## What's wired in this commit
 
-- ✅ FastAPI app with health, auth (login/callback/logout/me), clients, playbooks
+- ✅ FastAPI app with health, auth, clients, playbooks, **audits, actions**
 - ✅ Staff Google OAuth + signed-cookie sessions with email allowlist
-- ✅ `current_user` dependency protecting clients + playbooks routes
-- ✅ Postgres + Alembic initial schema (`users`, `clients`, `playbooks`)
+- ✅ `current_user` dependency protecting every business route
+- ✅ Postgres + Alembic schema (`users`, `clients`, `playbooks`, **`audits`, `audit_check_results`, `actions`**)
 - ✅ Redis + RQ worker (stub jobs)
-- ✅ Next.js 15 frontend: login screen, middleware-gated routes, nav with user menu
-- ✅ Same-origin `/api/*` via Next.js rewrites — no cross-origin cookie issues in dev or prod
+- ✅ **Audit engine** with 6 starter checks across Tracking / Bidding / Defaults — weighted A–F score
+- ✅ **Action Queue**: drafts → approve / reject → stub-executor records the result
+- ✅ Next.js 15 frontend: login, clients, audit detail, queue
+- ✅ Same-origin `/api/*` via Next.js rewrites — no cross-origin cookie issues
 - ✅ docker-compose, Dockerfiles, Fly.io configs
+
+## Try the audit end-to-end
+
+1. Sign in, create a client (no Google Ads CID required), open it.
+2. Click **Run audit**. With no snapshot in the body, the backend falls back to a demo `AccountSnapshot` so you see the full flow.
+3. The audit detail page shows the A–F grade, per-category scores, and failed checks with suggested fixes.
+4. Failed checks with a draft action create rows in the **Action Queue** — open `/queue`, approve to stub-execute, reject to drop.
+5. Once Google Ads OAuth + sync ship (slice B), `runAudit` will accept a real account snapshot and the stub executor flips to real mutations.
 
 ## What's NOT wired yet (next commits)
 
 - ❌ Google Ads OAuth + MCC connection (waiting on developer token approval)
-- ❌ Nightly GAQL sync (the `sync_client_account` job is a stub)
-- ❌ Audit engine, action queue, reports — see `docs/roadmap.md` P0 list
+- ❌ Nightly GAQL sync — `sync_client_account` is still a stub
+- ❌ Real Action Queue execution — `services/action_executor.py` is a stub
+- ❌ Remaining audit checks (we ship 6 of ~200 from the planned taxonomy)
+- ❌ Reports, OCI Sheets uploader, competitor watch — see `docs/roadmap.md`
 
 ## Deploying to Fly.io
 

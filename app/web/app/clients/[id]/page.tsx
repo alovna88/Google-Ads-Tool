@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, type AuditSummary } from "@/lib/api";
 import { serverCookieHeader } from "@/lib/auth";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlaybookEditor } from "./playbook-editor";
+import { RunAuditButton } from "./run-audit-button";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +31,14 @@ export default async function ClientDetailPage({
     const pb = await api.getPlaybook(id, { cookie });
     initialContent = pb.content_md;
     playbookVersion = pb.version;
+  } catch (e) {
+    if (!(e instanceof ApiError && e.status === 404)) throw e;
+  }
+
+  let audits: AuditSummary[] = [];
+  try {
+    const list = await api.listClientAudits(id, { cookie });
+    audits = list.items;
   } catch (e) {
     if (!(e instanceof ApiError && e.status === 404)) throw e;
   }
@@ -87,8 +97,67 @@ export default async function ClientDetailPage({
           <PlaybookEditor clientId={id} initialContent={initialContent} />
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base">Audits</CardTitle>
+          <RunAuditButton clientId={id} />
+        </CardHeader>
+        <CardContent>
+          {audits.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No audits yet. Run one to score the account against the
+              destructive-defaults framework. Demo data is used until
+              Google Ads sync is wired.
+            </p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="border-b border-border bg-muted/40 text-left">
+                <tr>
+                  <th className="px-3 py-2 font-medium">Run</th>
+                  <th className="px-3 py-2 font-medium">Score</th>
+                  <th className="px-3 py-2 font-medium">Grade</th>
+                </tr>
+              </thead>
+              <tbody>
+                {audits.map((a) => (
+                  <tr
+                    key={a.id}
+                    className="border-b border-border last:border-0 hover:bg-muted/30"
+                  >
+                    <td className="px-3 py-2">
+                      <Link
+                        href={`/audits/${a.id}`}
+                        className="underline-offset-4 hover:underline"
+                      >
+                        {new Date(a.run_at).toLocaleString()}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2 font-mono">{a.overall_score}</td>
+                    <td className="px-3 py-2">
+                      <GradeBadge grade={a.grade} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
+}
+
+function GradeBadge({ grade }: { grade: string }) {
+  const variant =
+    grade === "A"
+      ? "success"
+      : grade === "B"
+        ? "medium"
+        : grade === "C"
+          ? "high"
+          : "critical";
+  return <Badge variant={variant}>{grade}</Badge>;
 }
 
 function Field({

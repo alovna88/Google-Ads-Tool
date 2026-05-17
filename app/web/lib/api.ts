@@ -48,6 +48,77 @@ export type CurrentUser = {
   created_at: string;
 };
 
+export type AuditSummary = {
+  id: string;
+  run_at: string;
+  overall_score: number;
+  grade: string;
+};
+
+export type AuditCheckResult = {
+  id: string;
+  check_id: string;
+  category: string;
+  title: string;
+  passed: boolean;
+  severity: "critical" | "high" | "medium" | "low";
+  weight: number;
+  evidence: Record<string, unknown>;
+  suggested_fix_md: string | null;
+  draft_action_id: string | null;
+};
+
+export type Audit = {
+  id: string;
+  client_id: string;
+  run_at: string;
+  overall_score: number;
+  grade: string;
+  category_scores: Record<string, { score: number; grade: string }>;
+  check_results: AuditCheckResult[];
+};
+
+export type AuditList = {
+  items: AuditSummary[];
+  total: number;
+};
+
+export type ActionStatus =
+  | "proposed"
+  | "approved"
+  | "rejected"
+  | "executed"
+  | "failed"
+  | "expired";
+
+export type Action = {
+  id: string;
+  client_id: string;
+  audit_id: string | null;
+  type: string;
+  target: Record<string, unknown>;
+  diff: Record<string, unknown>;
+  reasoning_md: string;
+  evidence: Record<string, unknown>;
+  expected_impact: Record<string, unknown>;
+  risk_tier: "L1" | "L2" | "L3";
+  status: ActionStatus;
+  approver_id: string | null;
+  approved_at: string | null;
+  executed_at: string | null;
+  execution_result: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+  expires_at: string | null;
+  client_name: string;
+  client_slug: string;
+};
+
+export type ActionList = {
+  items: Action[];
+  total: number;
+};
+
 class ApiError extends Error {
   constructor(public status: number, public body: unknown) {
     super(`API ${status}`);
@@ -110,6 +181,33 @@ export const api = {
     request<Playbook>(`/clients/${clientId}/playbook`, {
       method: "PUT",
       body: JSON.stringify({ content_md: contentMd }),
+    }),
+
+  // Audits
+  listClientAudits: (clientId: string, opts?: { cookie?: string }) =>
+    request<AuditList>(`/clients/${clientId}/audits`, opts),
+  runAudit: (clientId: string, snapshot?: Record<string, unknown> | null) =>
+    request<Audit>(`/clients/${clientId}/audits`, {
+      method: "POST",
+      body: JSON.stringify({ snapshot: snapshot ?? null }),
+    }),
+  getAudit: (auditId: string, opts?: { cookie?: string }) =>
+    request<Audit>(`/audits/${auditId}`, opts),
+
+  // Actions
+  listActions: (
+    opts?: { cookie?: string; status?: string; clientId?: string },
+  ) => {
+    const params = new URLSearchParams();
+    if (opts?.status) params.set("status", opts.status);
+    if (opts?.clientId) params.set("client_id", opts.clientId);
+    const qs = params.toString();
+    return request<ActionList>(`/actions${qs ? `?${qs}` : ""}`, opts);
+  },
+  patchAction: (id: string, transition: "approve" | "reject") =>
+    request<Action>(`/actions/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ transition }),
     }),
 };
 

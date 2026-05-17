@@ -12,14 +12,15 @@ export default function HomePage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Clients</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="mb-4 text-sm text-muted-foreground">
-              Manage the client portfolio. Connect MCC, edit per-client playbooks.
+              Manage the portfolio. Connect MCC (coming), edit per-client
+              playbooks, run audits.
             </p>
             <Link
               href="/clients"
@@ -32,15 +33,33 @@ export default function HomePage() {
 
         <Card>
           <CardHeader>
+            <CardTitle>Action Queue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Draft actions proposed by audits, awaiting approval. Execution
+              is stubbed until Google Ads API ships.
+            </p>
+            <Link
+              href="/queue"
+              className="text-sm font-medium underline-offset-4 hover:underline"
+            >
+              Open queue →
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>What ships next</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-1 text-sm text-muted-foreground">
-              <li>· Staff Google OAuth login</li>
               <li>· Google Ads MCC connection per client</li>
               <li>· Nightly read sync via GAQL</li>
-              <li>· Action Queue with draft / approve / push</li>
-              <li>· Audit engine + weighted A–F score</li>
+              <li>· Real Action Queue execution</li>
+              <li>· OCI Google Sheets uploader</li>
+              <li>· Weekly + monthly reports</li>
             </ul>
           </CardContent>
         </Card>

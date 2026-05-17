@@ -13,12 +13,9 @@ export function Nav({ user }: { user: CurrentUser | null }) {
           <Link href="/clients" className="text-muted-foreground hover:text-foreground">
             Clients
           </Link>
-          <span className="text-muted-foreground/50" title="Coming next">
+          <Link href="/queue" className="text-muted-foreground hover:text-foreground">
             Action Queue
-          </span>
-          <span className="text-muted-foreground/50" title="Coming next">
-            Audits
-          </span>
+          </Link>
           <span className="text-muted-foreground/50" title="Coming next">
             Reports
           </span>
