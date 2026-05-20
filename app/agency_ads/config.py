@@ -45,7 +45,33 @@ class Settings(BaseSettings):
     google_ads_client_secret: str = ""
     google_ads_login_customer_id: str = ""
 
+    # LinkedIn Marketing API. Create an app at
+    # https://www.linkedin.com/developers/apps and add the
+    # "Advertising API" product (requires approval). Scopes used:
+    # r_ads (read campaigns), r_ads_reporting (analytics), rw_ads
+    # (mutations — leave off until write features ship). Refresh
+    # tokens require the "Marketing Developer Platform" tier.
+    linkedin_client_id: str = ""
+    linkedin_client_secret: str = ""
+    linkedin_oauth_scopes: str = "r_ads,r_ads_reporting,r_basicprofile"
+    # Versioned LinkedIn REST API header. Format YYYYMM. Bump every
+    # few months; LinkedIn rolls older versions off on a known cadence.
+    linkedin_api_version: str = "202405"
+    # Refresh tokens with less than this many seconds left until expiry
+    # get rotated by the background job.
+    linkedin_refresh_skew_seconds: int = 7 * 24 * 3600
+
+    # Static bearer token used by trusted local processes (the LinkedIn
+    # MCP server, ops scripts) to call /linkedin/mcp/* without a user
+    # session. Empty disables that auth path entirely — recommended in
+    # production unless the MCP runs in the same network as the API.
+    agency_service_token: str = ""
+
     anthropic_api_key: str = ""
+
+    @property
+    def linkedin_scopes(self) -> list[str]:
+        return [s.strip() for s in self.linkedin_oauth_scopes.split(",") if s.strip()]
 
     @property
     def is_production(self) -> bool:

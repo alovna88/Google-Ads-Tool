@@ -29,5 +29,10 @@ class Client(UUIDPrimaryKey, Timestamps, Base):
         order_by="Playbook.version.desc()",
     )
 
+    linkedin_connections: Mapped[list["LinkedinConnection"]] = relationship(  # noqa: F821
+        back_populates="client",
+        cascade="all, delete-orphan",
+    )
+
     def __repr__(self) -> str:
         return f"<Client {self.slug} cid={self.google_ads_customer_id}>"

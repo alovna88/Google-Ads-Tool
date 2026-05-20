@@ -17,7 +17,8 @@ The skills pack works standalone today. The web app supersedes the manual workfl
 
 ## What this is not
 
-- Not a Meta/LinkedIn/Microsoft Ads tool. Best-in-class on Google Ads first.
+- Not a Meta/Microsoft Ads tool. Best-in-class on Google Ads first.
+- LinkedIn Ads has a read-only side-door — OAuth + token refresh + an MCP server + a `/linkedin-ads-report` skill — for agencies that need a single performance read across Google + LinkedIn. See [`docs/linkedin.md`](docs/linkedin.md). Writes still go through Google Ads only.
 - Not a replacement for Optmyzr / Adalysis at feature-checklist count. Differentiates on conversational workflow + action queue + B2B SaaS opinion.
 - Not autopilot. Every write goes through a draft → approve → push queue. Practitioner consensus: AI needs a pilot.
 - Not multi-tenant SaaS. Internal to one agency.

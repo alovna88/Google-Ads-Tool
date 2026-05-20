@@ -7,6 +7,7 @@ from agency_ads.models.action import Action
 from agency_ads.models.audit import Audit, AuditCheckResult
 from agency_ads.models.base import Base
 from agency_ads.models.client import Client
+from agency_ads.models.linkedin import LinkedinConnection
 from agency_ads.models.playbook import Playbook
 from agency_ads.models.user import User
 
@@ -16,6 +17,7 @@ __all__ = [
     "AuditCheckResult",
     "Base",
     "Client",
+    "LinkedinConnection",
     "Playbook",
     "User",
 ]
