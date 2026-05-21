@@ -1,6 +1,6 @@
 # Skills pack
 
-Eleven Claude Code skills for running a B2B SaaS Google Ads agency workflow (with a Reddit Ads complement). Each is a self-contained `SKILL.md` you can install into `~/.claude/skills/` and invoke with `/<skill-name>`.
+Twelve Claude skills for running a B2B SaaS Google Ads agency workflow (with a Reddit Ads complement). Each is a self-contained `SKILL.md`. Ten target Claude Code (`~/.claude/skills/`, invoked as `/<skill-name>`); the Reddit Ads workflow also ships a **Desktop variant** (`reddit-ads-campaign-dev-desktop/`) that can be zipped and uploaded into Claude Desktop / Claude.ai under Settings → Capabilities → Skills.
 
 ## Installation
 
@@ -30,7 +30,7 @@ cd ~/agency/clients/acme && claude
 > /account-audit
 ```
 
-## The eleven skills
+## The skills
 
 | Skill | When | What it produces |
 |---|---|---|
@@ -43,6 +43,7 @@ cd ~/agency/clients/acme && claude
 | `/ad-copy-variants` | Weekly creative refresh | RSA / asset variants with brand-voice guardrails and psychological angle labels |
 | `/competitor-watch` | Monthly | Wayback diffs + sitemap diff + Transparency Center snapshot summary for 3–5 competitors |
 | `/reddit-ads-campaign-dev` | New Reddit campaign launch, paid-social expansion | End-to-end Reddit Ads brief: subreddit shortlist, layered targeting, structure, native-voice creative, Pixel + CAPI setup, launch checklist, scaling framework |
+| `reddit-ads-campaign-dev-desktop` | Same use case, but running in Claude Desktop / Claude.ai | Desktop-native variant of the above — no `CLAUDE.md` gate, all output inline as Markdown for copy-paste |
 | `/weekly-report` | Every Monday 6am | One-page agency-grade weekly performance summary with deltas, anomalies, and 3 specific actions |
 | `/monthly-report` | First business day of month | Branded one-page-per-section monthly client report covering pipeline, spend, learnings, plan |
 
