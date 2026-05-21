@@ -1,6 +1,6 @@
 # Skills pack
 
-Ten Claude Code skills for running a B2B SaaS Google Ads agency workflow. Each is a self-contained `SKILL.md` you can install into `~/.claude/skills/` and invoke with `/<skill-name>`.
+Eleven Claude Code skills for running a B2B SaaS Google Ads agency workflow (with a Reddit Ads complement). Each is a self-contained `SKILL.md` you can install into `~/.claude/skills/` and invoke with `/<skill-name>`.
 
 ## Installation
 
@@ -30,7 +30,7 @@ cd ~/agency/clients/acme && claude
 > /account-audit
 ```
 
-## The ten skills
+## The eleven skills
 
 | Skill | When | What it produces |
 |---|---|---|
@@ -42,6 +42,7 @@ cd ~/agency/clients/acme && claude
 | `/icp-research` | Quarterly audience refresh, new campaign launch | Mines Reddit/G2/competitor reviews into a Voice-of-Customer brief + Meta/Google targeting + hook angle |
 | `/ad-copy-variants` | Weekly creative refresh | RSA / asset variants with brand-voice guardrails and psychological angle labels |
 | `/competitor-watch` | Monthly | Wayback diffs + sitemap diff + Transparency Center snapshot summary for 3–5 competitors |
+| `/reddit-ads-campaign-dev` | New Reddit campaign launch, paid-social expansion | End-to-end Reddit Ads brief: subreddit shortlist, layered targeting, structure, native-voice creative, Pixel + CAPI setup, launch checklist, scaling framework |
 | `/weekly-report` | Every Monday 6am | One-page agency-grade weekly performance summary with deltas, anomalies, and 3 specific actions |
 | `/monthly-report` | First business day of month | Branded one-page-per-section monthly client report covering pipeline, spend, learnings, plan |
 
@@ -74,7 +75,7 @@ If `CLAUDE.md` is missing, every skill will refuse to run and tell you to set it
   /account-audit       /negative-keyword-builder         /weekly-report
   /conversion-...      /icp-research                     /monthly-report
   /search-term-audit   /ad-copy-variants
-  /close-variant-...
+  /close-variant-...   /reddit-ads-campaign-dev
   /competitor-watch
 ```
 
