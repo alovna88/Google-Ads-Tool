@@ -1,6 +1,6 @@
 ---
 name: reddit-ads-campaign-dev-desktop
-description: End-to-end Reddit Ads campaign development for B2B SaaS — objective + subreddit research, layered targeting (community / interest / keyword / conversation / custom), campaign structure, ad creative & copy in native voice, Reddit Pixel + Conversions API setup with dedup, bid strategy, scaling framework, and pre-launch QA. Trigger whenever the user mentions Reddit Ads, Promoted Posts, Conversation Placement, Free Form ads, AMA Ads, Reddit Lead Gen, Reddit Pixel, Reddit CAPI, subreddit targeting, Max campaigns, or r/<community> targeting — even if they just say "advertise on Reddit." Optimized for Claude Desktop / Claude.ai (no working-directory or file-write assumptions).
+description: End-to-end Reddit Ads campaign development for B2B SaaS — objective + subreddit research, layered targeting (community / interest / keyword / conversation / custom), campaign structure, ad creative & copy in native voice, Reddit Pixel + Conversions API setup with dedup, bid strategy, scaling framework, and pre-launch QA. Trigger whenever the user mentions Reddit Ads, Promoted Posts, Conversation Placement, Free Form ads, AMA Ads, Reddit Lead Gen, Reddit Pixel, Reddit CAPI, subreddit targeting, Max campaigns, or r/[community] targeting — even if they just say "advertise on Reddit." Optimized for Claude Desktop / Claude.ai (no working-directory or file-write assumptions).
 ---
 
 # Reddit Ads — Campaign Development
@@ -202,11 +202,10 @@ Reddit doesn't have native split testing. Structure tests manually:
 
 Before any campaign goes live, both client-side and server-side tracking must be in place. Combining Pixel + CAPI reduces CPA materially (Reddit's reported figures: ~25% lower CPA, ~35% more unique converters) because CAPI catches the 30–40% of events the pixel misses to ad-blockers and privacy settings.
 
-**Reddit Pixel (client-side).** Drop in `<head>` site-wide. Verify with the Reddit Pixel Helper Chrome extension before launch.
+**Reddit Pixel (client-side).** Wrap the snippet below in a script tag in the page head, site-wide. Verify with the Reddit Pixel Helper Chrome extension before launch.
 
-```html
-<!-- Base pixel -->
-<script>
+```javascript
+// Base pixel — wrap in a script tag in the page head
 !function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?
 p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};
 p.callQueue=[];var t=d.createElement("script");
@@ -219,7 +218,6 @@ rdt('init','YOUR_PIXEL_ID', {
   useDecimalCurrencyValues: true
 });
 rdt('track', 'PageVisit');
-</script>
 ```
 
 **Standard events to instrument** (map to your CTA destinations — do not invent events):
@@ -326,7 +324,7 @@ What kills the ad:
 | **Promoted Post — Image** | TOFU/MOFU, workhorse | 1:1 (1080×1080) or 4:5 (1080×1350) preferred; also 4:3, 16:9. JPG/PNG/GIF (GIF → still thumbnail). Max 3 MB. |
 | **Promoted Post — Video** | Demos, walkthroughs | 1:1, 4:5, 4:3, 16:9. MP4/MOV, ≤30 FPS. Max 1 GB (≤512 MB recommended). 5–30 s ideal; up to 15 min allowed. Autoplay muted — front-load message in first 3 s. Captions required. |
 | **Carousel** | Multi-feature / sequential narrative | 2–6 cards at 1200×1200. JPG/PNG/GIF. Max 20 MB/card (3 MB recommended). 50-char caption per card. Each card must stand alone — users don't always swipe. |
-| **Text Ad** | Native-feeling discussion-style promotion | Headline ≤300 chars (keep <100). Body up to 40,000 chars (rich text). Blends into organic. |
+| **Text Ad** | Native-feeling discussion-style promotion | Headline ≤300 chars (keep under 100). Body up to 40,000 chars (rich text). Blends into organic. |
 | **Free Form Ad** | MOFU/BOFU thought leadership, technical subs | Long-form native rich text + images. Best Reddit-only format. Lead with TL;DR. |
 | **Conversation Placement** | Layered with other formats — not standalone | Ad appears inside comment threads. Headline **≤100 chars mobile / ≤250 chars desktop**. Thumbnail 400×300 px, ≤500 KB. Combine with Feed for lower blended CPM. |
 | **Reddit Lead Gen Ad** | Conversions where LP friction kills CVR | Native form, pre-filled where possible. Lower lead quality than landing-page traffic — add 1–2 qualifying questions. |
@@ -336,7 +334,7 @@ What kills the ad:
 
 **Headline character limits across placements** — always design for the strictest:
 
-- **Feed:** 300 chars hard cap, keep under 150 for full visibility, **<100 for mobile**
+- **Feed:** 300 chars hard cap, keep under 150 for full visibility, **under 100 for mobile**
 - **Conversation placement:** 100 chars mobile / 250 chars desktop
 - **If running both placements (recommended for B2B):** keep headline ≤100 chars
 
@@ -458,7 +456,7 @@ Walk this checklist with the user before going live. Skipping it is the #1 way t
 - [ ] **Native-voice check:** read the top 20 organic posts of the target sub; does the ad read like one of them?
 - [ ] **Buzzword scrub:** no "revolutionize / disrupt / unleash / leverage / transform / next-generation"; reconciled against the brand voice the user supplied
 - [ ] Landing page matches ad promise (same offer, same language)
-- [ ] Landing page loads <3s on mobile and desktop
+- [ ] Landing page loads under 3 seconds on mobile and desktop
 - [ ] Images at correct aspect ratio (no awkward crops in both Feed and Conversation previews)
 - [ ] Video has captions and front-loaded message
 - [ ] Sender account associated with the ad has reasonable karma
@@ -482,7 +480,7 @@ The thread under your ad is public, indexable, and influences how every subseque
 ### 4.7 Post-launch monitoring plan
 
 - **Day 1–3:** Delivery, frequency, upvote/downvote ratio, comment quality. Pause anything getting brigaded.
-- **Day 7:** First optimization check — pause clear underperformers (CPC >2× benchmark, CTR <0.3% on Feed). Don't make material changes inside the 14-day learning window unless an ad is actively damaging the brand.
+- **Day 7:** First optimization check — pause clear underperformers (CPC over 2× benchmark, CTR under 0.3% on Feed). Don't make material changes inside the 14-day learning window unless an ad is actively damaging the brand.
 - **Day 14:** Full performance review against KPIs. First valid optimization point per Reddit's calibration window.
 - **Day 30:** Decide refresh, scale, or kill. Refresh creative every 10–14 days regardless — Reddit fatigue is faster than Meta or LinkedIn because users visit the same communities daily.
 
@@ -543,7 +541,7 @@ If they say "build me a Reddit campaign for our new product," don't draft — in
 [One line — and the in-platform optimization metric it implies]
 
 ## Subreddit shortlist
-[5–15 subs with rationale; flag any with promo-content bans or <5K subscribers]
+[5–15 subs with rationale; flag any with promo-content bans or under 5K subscribers]
 
 ## Audiences / Ad Groups
 [One block per ad group, one targeting method each, per §1.3 format]
