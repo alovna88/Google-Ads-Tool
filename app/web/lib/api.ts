@@ -119,6 +119,34 @@ export type ActionList = {
   total: number;
 };
 
+export type LinkedinAdAccount = {
+  urn: string;
+  id: string;
+  name: string | null;
+  currency: string | null;
+  status: string | null;
+  role: string | null;
+};
+
+export type LinkedinConnectionStatus =
+  | "connected"
+  | "expired"
+  | "needs_reauth"
+  | "revoked"
+  | "error"
+  | "never";
+
+export type LinkedinHealth = {
+  client_id: string;
+  client_slug: string;
+  connected: boolean;
+  status: LinkedinConnectionStatus;
+  expires_at: string | null;
+  seconds_until_expiry: number | null;
+  last_refreshed_at: string | null;
+  last_error: string | null;
+};
+
 class ApiError extends Error {
   constructor(public status: number, public body: unknown) {
     super(`API ${status}`);
@@ -208,6 +236,28 @@ export const api = {
     request<Action>(`/actions/${id}`, {
       method: "PATCH",
       body: JSON.stringify({ transition }),
+    }),
+
+  // LinkedIn
+  linkedinHealth: (slug: string, opts?: { cookie?: string }) =>
+    request<LinkedinHealth>(`/linkedin/clients/${slug}/health`, opts),
+  linkedinAdAccounts: (
+    slug: string,
+    opts?: { cookie?: string; refresh?: boolean },
+  ) => {
+    const qs = opts?.refresh ? "?refresh=true" : "";
+    return request<LinkedinAdAccount[]>(
+      `/linkedin/clients/${slug}/accounts${qs}`,
+      opts,
+    );
+  },
+  linkedinRefresh: (slug: string) =>
+    request<LinkedinHealth>(`/linkedin/clients/${slug}/refresh`, {
+      method: "POST",
+    }),
+  linkedinDisconnect: (slug: string) =>
+    request<void>(`/linkedin/clients/${slug}/connection`, {
+      method: "DELETE",
     }),
 };
 

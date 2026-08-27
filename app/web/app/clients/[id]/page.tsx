@@ -4,6 +4,7 @@ import { api, ApiError, type AuditSummary } from "@/lib/api";
 import { serverCookieHeader } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LinkedinCard } from "./linkedin-card";
 import { PlaybookEditor } from "./playbook-editor";
 import { RunAuditButton } from "./run-audit-button";
 
@@ -97,6 +98,8 @@ export default async function ClientDetailPage({
           <PlaybookEditor clientId={id} initialContent={initialContent} />
         </CardContent>
       </Card>
+
+      <LinkedinCard clientId={id} clientSlug={client.slug} cookie={cookie} />
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
